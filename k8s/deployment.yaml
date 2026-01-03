@@ -1,0 +1,127 @@
+# ====================================================================================
+# KUBERNETES DEPLOYMENT - Consumer Application
+# ====================================================================================
+# A Deployment defines how to run your application in Kubernetes.
+# It manages pods (containers) and ensures they stay running.
+#
+# PHASE 1 CONFIGURATION:
+# - Runs 1 replica of the consumer app
+# - Connects to Event Hubs to read messages
+# - Uses Blob Storage for checkpointing
+# - Exposes health check endpoints for Kubernetes monitoring
+# ====================================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eventhub-consumer
+  namespace: default
+  labels:
+    app: eventhub-consumer
+spec:
+  # ====================================================================================
+  # REPLICAS - How many instances (pods) to run
+  # ====================================================================================
+  replicas: 1  # Start with 1 for Phase 1 (can scale up later)
+  
+  selector:
+    matchLabels:
+      app: eventhub-consumer
+  
+  template:
+    metadata:
+      labels:
+        app: eventhub-consumer
+    spec:
+      containers:
+      - name: consumer
+        # ====================================================================================
+        # CONTAINER IMAGE
+        # ====================================================================================
+        # Replace <YOUR_ACR> with your Azure Container Registry name
+        # Example: myregistry.azurecr.io/eventhub-consumer:v1
+        image: <YOUR_ACR>.azurecr.io/eventhub-consumer:v1
+        imagePullPolicy: Always  # Always pull latest image
+        
+        # ====================================================================================
+        # PORTS
+        # ====================================================================================
+        ports:
+        - containerPort: 8080  # Port for health checks
+          name: http
+          protocol: TCP
+        
+        # ====================================================================================
+        # ENVIRONMENT VARIABLES
+        # ====================================================================================
+        env:
+        # Non-sensitive config from ConfigMap
+        - name: EVENTHUB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: consumer-config
+              key: EVENTHUB_NAME
+        
+        - name: ASPNETCORE_URLS
+          valueFrom:
+            configMapKeyRef:
+              name: consumer-config
+              key: ASPNETCORE_URLS
+        
+        - name: ASPNETCORE_ENVIRONMENT
+          valueFrom:
+            configMapKeyRef:
+              name: consumer-config
+              key: ASPNETCORE_ENVIRONMENT
+        
+        # Sensitive config from Secrets
+        - name: EVENTHUB_CONNECTION_STRING
+          valueFrom:
+            secretKeyRef:
+              name: azure-secrets
+              key: eventhub-connection
+        
+        - name: STORAGE_CONNECTION_STRING
+          valueFrom:
+            secretKeyRef:
+              name: azure-secrets
+              key: storage-connection
+        
+        # ====================================================================================
+        # RESOURCE LIMITS
+        # ====================================================================================
+        # Requests: Minimum resources guaranteed to the container
+        # Limits: Maximum resources the container can use
+        resources:
+          requests:
+            cpu: 100m      # 0.1 CPU cores
+            memory: 128Mi  # 128 megabytes
+          limits:
+            cpu: 500m      # 0.5 CPU cores
+            memory: 512Mi  # 512 megabytes
+        
+        # ====================================================================================
+        # LIVENESS PROBE - Is the app alive?
+        # ====================================================================================
+        # Kubernetes will restart the pod if this check fails repeatedly
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: 8080
+          initialDelaySeconds: 30  # Wait 30 seconds before first check
+          periodSeconds: 10        # Check every 10 seconds
+          timeoutSeconds: 3        # Timeout after 3 seconds
+          failureThreshold: 3      # Restart after 3 failures
+        
+        # ====================================================================================
+        # READINESS PROBE - Is the app ready to receive traffic?
+        # ====================================================================================
+        # Kubernetes won't send traffic to the pod if this check fails
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 8080
+          initialDelaySeconds: 10  # Wait 10 seconds before first check
+          periodSeconds: 5         # Check every 5 seconds
+          timeoutSeconds: 3        # Timeout after 3 seconds
+          failureThreshold: 3      # Mark not ready after 3 failures

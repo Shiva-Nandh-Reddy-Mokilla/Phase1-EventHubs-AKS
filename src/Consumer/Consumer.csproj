@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!-- ====================================================================================
+       CONSUMER PROJECT - Phase 1
+       ====================================================================================
+       This project reads messages from Azure Event Hubs.
+       
+       Required NuGet Packages:
+       - Azure.Messaging.EventHubs: Core Event Hubs SDK
+       - Azure.Messaging.EventHubs.Processor: For background processing with checkpointing
+       - Azure.Storage.Blobs: Required for Event Hubs checkpointing
+       - Microsoft.Extensions.Diagnostics.HealthChecks: For Kubernetes health checks
+       ==================================================================================== -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Azure Event Hubs packages -->
+    <PackageReference Include="Azure.Messaging.EventHubs" Version="5.11.5" />
+    <PackageReference Include="Azure.Messaging.EventHubs.Processor" Version="5.11.5" />
+    
+    <!-- Azure Storage (required for Event Hubs checkpointing) -->
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.21.2" />
+    
+    <!-- Health checks are included in .NET SDK by default, no explicit package needed -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>
