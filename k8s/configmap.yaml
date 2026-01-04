@@ -1,12 +1,7 @@
 # ====================================================================================
-# CONFIGMAP - Non-sensitive Configuration for Consumer App
+# CONFIGMAP - Non-sensitive Configuration
 # ====================================================================================
-# A ConfigMap stores configuration data that can be used by Kubernetes pods.
-# This contains NON-SENSITIVE information (not passwords or connection strings).
-#
-# PHASE 1 CONFIGURATION:
-# - Event Hub name
-# - ASP.NET Core settings (port, environment)
+# Stores configuration that can be used by the consumer pod.
 # ====================================================================================
 
 apiVersion: v1
@@ -15,12 +10,5 @@ metadata:
   name: consumer-config
   namespace: default
 data:
-  # Name of your Event Hub (e.g., "my-eventhub")
-  # Replace this with your actual Event Hub name
+  # Event Hub name (replace with your actual Event Hub name)
   EVENTHUB_NAME: "your-eventhub-name"
-  
-  # ASP.NET Core listens on port 8080 for health checks
-  ASPNETCORE_URLS: "http://+:8080"
-  
-  # Environment: Production (use Development for more verbose logging)
-  ASPNETCORE_ENVIRONMENT: "Production"

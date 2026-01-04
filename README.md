@@ -5,19 +5,51 @@
 This project demonstrates message processing using Azure Event Hubs and Azure Kubernetes Service.
 
 **What it does:**
-- Producer sends test messages to Azure Event Hubs
-- Consumer runs in AKS, reads messages from Event Hubs, and logs them
+- Producer sends test messages to Azure Event Hubs (runs locally)
+- Consumer reads messages from Event Hubs and logs them (runs in AKS)
+
+**Phase 1 Scope:**
+- Simple Event Hubs producer and consumer
+- No Blob Storage checkpointing
+- No Service Bus
+- No autoscaling
+- Just the basics: send and receive messages
+
+---
+
+## 📚 Comprehensive Documentation
+
+**New to this project? Start here:**
+
+- **[Complete Beginner's Guide](./docs/BEGINNER_GUIDE.md)** - Everything explained from scratch (45-60 min read)
+  - What is this project and why it exists
+  - How everything works step-by-step
+  - Detailed code walkthroughs
+  - Real-world analogies and examples
+
+- **[Quick Reference](./docs/QUICK_REFERENCE.md)** - One-page cheat sheet (5 min read)
+  - All important commands
+  - Quick troubleshooting
+  - Key concepts summary
+
+- **[Glossary](./docs/GLOSSARY.md)** - Technical dictionary
+  - Simple explanations of every term
+  - Look up as needed
+
+- **[Presentation Guide](./docs/PRESENTATION_TIPS.md)** - For your demo (30 min read)
+  - Complete presentation structure
+  - Demo script and flow
+  - Common Q&A with answers
+  - Best practices and tips
+
+**See [docs/README.md](./docs/README.md) for the complete documentation index.**
 
 ---
 
 ## Architecture
 
 ```
-Producer (Console) --> Azure Event Hubs --> Consumer (AKS Pod)
-                                                 |
-                                                 v
-                                         Azure Blob Storage
-                                           (Checkpoints)
+Producer (Local Console) --> Azure Event Hubs --> Consumer (AKS Console App)
 ```
 
 ---
@@ -26,7 +58,6 @@ Producer (Console) --> Azure Event Hubs --> Consumer (AKS Pod)
 
 ### Azure Resources
 - Event Hubs Namespace + Event Hub
-- Storage Account
 - Container Registry (ACR)
 - AKS Cluster
 
@@ -48,7 +79,6 @@ RG="my-rg"
 LOCATION="eastus"
 EH_NS="myeventhub123"
 EH_NAME="messages"
-STORAGE="mystorage123"
 ACR="myacr123"
 AKS="myaks"
 
@@ -62,12 +92,6 @@ az eventhubs namespace authorization-rule keys list \
   --name RootManageSharedAccessKey \
   --query primaryConnectionString -o tsv
 
-# Create Storage Account
-az storage account create -n $STORAGE -g $RG -l $LOCATION --sku Standard_LRS
-
-# Get connection string
-az storage account show-connection-string -n $STORAGE -g $RG --query connectionString -o tsv
-
 # Create AKS and ACR
 az acr create -n $ACR -g $RG --sku Basic
 az aks create -n $AKS -g $RG --node-count 1 --node-vm-size Standard_B2s --generate-ssh-keys
@@ -80,54 +104,62 @@ az aks get-credentials -n $AKS -g $RG
 ```bash
 cd src/Producer
 
+# Option 1: Use appsettings.Development.json
+# Edit appsettings.Development.json and add your connection string
+export DOTNET_ENVIRONMENT=Development
+dotnet run
+
+# Option 2: Use environment variables
 export EVENTHUB_CONNECTION_STRING="your-connection-string"
 export EVENTHUB_NAME="messages"
-
 dotnet run
 ```
 
-Select option 2 to send 10 messages, or option 1 for single messages.
+Select option 2 to send 10 messages.
 
 ### 3. Deploy Consumer to AKS
 
 ```bash
-# Build and push image
+# Build and push Docker image
 cd src/Consumer
 az acr login -n $ACR
-docker build -t $ACR.azurecr.io/eventhub-consumer:v1 .
+docker build -t $ACR.azurecr.io/eventhub-consumer:v1 -f Dockerfile ..
 docker push $ACR.azurecr.io/eventhub-consumer:v1
 
 # Update k8s/configmap.yaml with your Event Hub name
 # Update k8s/deployment.yaml with your ACR name
 
-# Create secret with base64-encoded connection strings
-echo -n "your-eventhub-connection" | base64
-echo -n "your-storage-connection" | base64
+# Create secret with base64-encoded connection string
+echo -n "your-eventhub-connection-string" | base64
+# Copy the output
 
-# Edit k8s/secret.yaml with the base64 values
+# Create k8s/secret.yaml from template and paste the base64 value
+cp k8s/secret.yaml.template k8s/secret.yaml
+# Edit secret.yaml and replace <BASE64_ENCODED_CONNECTION_STRING>
 
-# Deploy
+# Deploy to AKS
 kubectl apply -f k8s/configmap.yaml
 kubectl apply -f k8s/secret.yaml
 kubectl apply -f k8s/deployment.yaml
-kubectl apply -f k8s/service.yaml
 
-# Verify
+# Verify deployment
 kubectl get pods
 kubectl logs -f deployment/eventhub-consumer
 ```
 
 ### 4. Test End-to-End
 
-Terminal 1:
+Terminal 1 - Watch consumer logs:
 ```bash
 kubectl logs -f deployment/eventhub-consumer
 ```
 
-Terminal 2:
+Terminal 2 - Send messages:
 ```bash
 cd src/Producer
-dotnet run --count 5
+export DOTNET_ENVIRONMENT=Development
+dotnet run
+# Select option 2 to send 10 messages
 ```
 
 You should see messages appearing in the consumer logs.
@@ -142,21 +174,20 @@ ShivaProject/
 ├── azure-config.template.sh
 ├── ShivaProject.sln
 ├── src/
-│   ├── Producer/
+│   ├── Producer/                  # Runs locally
 │   │   ├── Program.cs
 │   │   ├── MessageGenerator.cs
-│   │   └── Producer.csproj
-│   └── Consumer/
+│   │   ├── Producer.csproj
+│   │   └── appsettings.json
+│   └── Consumer/                  # Runs in AKS
 │       ├── Program.cs
-│       ├── Services/
-│       │   └── EventHubsProcessor.cs
+│       ├── Consumer.csproj
 │       ├── Dockerfile
-│       └── Consumer.csproj
+│       └── appsettings.json
 └── k8s/
     ├── configmap.yaml
     ├── secret.yaml.template
-    ├── deployment.yaml
-    └── service.yaml
+    └── deployment.yaml
 ```
 
 ---
@@ -164,34 +195,51 @@ ShivaProject/
 ## Troubleshooting
 
 ### Producer
-- Verify EVENTHUB_CONNECTION_STRING and EVENTHUB_NAME are set
+- Verify connection string and Event Hub name are set
 - Check connection string has Send permissions
 
 ### Consumer
-- Check logs: `kubectl logs <pod-name>`
-- Verify connection strings in secret
+- Check pod logs: `kubectl logs <pod-name>`
+- Verify connection string in secret: `kubectl get secret azure-secrets -o yaml`
 - Ensure ACR is attached to AKS: `az aks check-acr -n $AKS -g $RG --acr $ACR`
+- Check pod status: `kubectl describe pod <pod-name>`
 
-### No Messages
+### No Messages Appearing
 - Verify Producer sends to correct Event Hub
+- Consumer reads from EventPosition.Latest (only new messages)
+- Send messages AFTER consumer is running
 - Check Event Hub metrics in Azure Portal
-- Confirm Consumer Group matches (default: $Default)
 
 ---
 
 ## Key Concepts
 
-**Event Hubs**: Azure messaging service for high-throughput event streaming
+**Event Hubs**: Azure messaging service for event streaming
 
-**Checkpointing**: Tracks which messages have been processed using Blob Storage
+**EventHubConsumerClient**: Simple client for reading messages (no checkpointing)
 
-**Kubernetes Health Checks**: 
-- Liveness probe: Restarts container if crashed
-- Readiness probe: Controls traffic routing
+**Kubernetes Deployment**: Runs containerized apps in AKS
 
-**Configuration**:
-- ConfigMap: Non-sensitive config
-- Secret: Sensitive data (connection strings)
+**ConfigMap vs Secret**:
+- ConfigMap: Non-sensitive config (Event Hub name)
+- Secret: Sensitive data (connection string)
+
+---
+
+## Phase 1 vs Phase 2
+
+**Phase 1 (Current):**
+- Producer sends messages
+- Consumer reads and logs messages
+- No checkpointing
+- No Blob Storage
+- No Service Bus
+
+**Phase 2 (Future):**
+- Add checkpointing with Blob Storage
+- Forward messages to Service Bus
+- Add autoscaling
+- Add monitoring
 
 ---
 
@@ -209,4 +257,4 @@ Phase 1 complete when:
 
 - [Azure Event Hubs](https://docs.microsoft.com/azure/event-hubs/)
 - [Azure Kubernetes Service](https://docs.microsoft.com/azure/aks/)
-- [.NET Background Services](https://docs.microsoft.com/dotnet/core/extensions/hosted-services)
+- [EventHubConsumerClient](https://docs.microsoft.com/dotnet/api/azure.messaging.eventhubs.consumer.eventhubconsumerclient)
