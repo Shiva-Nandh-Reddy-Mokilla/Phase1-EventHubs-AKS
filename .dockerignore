@@ -1,0 +1,26 @@
+# .NET build outputs (Docker will build its own)
+**/bin/
+**/obj/
+
+# Git repository (not needed in Docker image)
+.git/
+.gitignore
+
+# Documentation (not needed in Docker image)
+README.md
+*.md
+
+# Kubernetes config files (not needed in Docker image)
+k8s/
+
+# GitHub workflows (not needed in Docker image)
+.github/
+
+# Producer code (Consumer image doesn't need Producer code)
+src/Producer/
+
+# Mac OS system file
+.DS_Store
+
+# Development settings with secrets (not needed in Docker image)
+**/appsettings.Development.json
