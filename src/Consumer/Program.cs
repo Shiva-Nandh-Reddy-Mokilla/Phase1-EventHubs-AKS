@@ -1,16 +1,5 @@
-// ====================================================================================
-// PHASE 1: Event Hubs Consumer - Simple Console Application
-// ====================================================================================
-// This is a simplified consumer that reads messages from Azure Event Hubs.
-// 
-// What this does:
-// 1. Connects to Azure Event Hubs
-// 2. Reads messages continuously
-// 3. Logs each message to the console
-// 4. No checkpointing, no Blob Storage, no web server
-//
-// This is meant for learning and Phase 1 demo purposes.
-// ====================================================================================
+// Consumer - reads messages from Azure Event Hubs
+// Runs in Kubernetes and logs messages to console
 
 using Azure.Messaging.EventHubs.Consumer;
 using Microsoft.Extensions.Configuration;

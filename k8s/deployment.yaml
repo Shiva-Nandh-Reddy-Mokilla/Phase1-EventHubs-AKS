@@ -1,9 +1,4 @@
-# ====================================================================================
-# KUBERNETES DEPLOYMENT - Phase 1 Consumer
-# ====================================================================================
-# Deploys the Event Hubs consumer as a simple console app in AKS.
-# No health checks needed since it's just a console app that logs to stdout.
-# ====================================================================================
+# Deployment for Consumer app
 
 apiVersion: apps/v1
 kind: Deployment

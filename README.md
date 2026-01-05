@@ -15,36 +15,6 @@ This project demonstrates message processing using Azure Event Hubs and Azure Ku
 - No autoscaling
 - Just the basics: send and receive messages
 
----
-
-## 📚 Comprehensive Documentation
-
-**New to this project? Start here:**
-
-- **[Complete Beginner's Guide](./docs/BEGINNER_GUIDE.md)** - Everything explained from scratch (45-60 min read)
-  - What is this project and why it exists
-  - How everything works step-by-step
-  - Detailed code walkthroughs
-  - Real-world analogies and examples
-
-- **[Quick Reference](./docs/QUICK_REFERENCE.md)** - One-page cheat sheet (5 min read)
-  - All important commands
-  - Quick troubleshooting
-  - Key concepts summary
-
-- **[Glossary](./docs/GLOSSARY.md)** - Technical dictionary
-  - Simple explanations of every term
-  - Look up as needed
-
-- **[Presentation Guide](./docs/PRESENTATION_TIPS.md)** - For your demo (30 min read)
-  - Complete presentation structure
-  - Demo script and flow
-  - Common Q&A with answers
-  - Best practices and tips
-
-**See [docs/README.md](./docs/README.md) for the complete documentation index.**
-
----
 
 ## Architecture
 

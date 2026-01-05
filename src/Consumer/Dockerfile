@@ -1,9 +1,4 @@
-# ====================================================================================
-# CONSUMER DOCKERFILE - Phase 1
-# ====================================================================================
-# Multi-stage build for a simple Event Hubs consumer console app.
-# No web server needed - just logs messages to stdout.
-# ====================================================================================
+# Dockerfile for Consumer app
 
 # Build stage
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build

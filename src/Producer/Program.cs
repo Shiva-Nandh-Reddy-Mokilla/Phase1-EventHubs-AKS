@@ -1,19 +1,5 @@
-// ====================================================================================
-// PHASE 1: Event Hubs Producer - Message Sender
-// ====================================================================================
-// This application sends test messages to Azure Event Hubs.
-// 
-// What this does:
-// 1. Connects to Azure Event Hubs using a connection string
-// 2. Allows you to send messages in two modes:
-//    - Interactive mode: Manual control to send single/batch messages
-//    - Batch mode: Automatically send a specified number of messages
-// 3. Each message contains a unique ID, timestamp, and sample data
-//
-// HOW TO RUN:
-// - Interactive mode: dotnet run
-// - Batch mode:       dotnet run --count 20
-// ====================================================================================
+// Producer - sends messages to Azure Event Hubs
+// Run with: dotnet run
 
 using Azure.Messaging.EventHubs;
 using Azure.Messaging.EventHubs.Producer;
@@ -53,9 +39,7 @@ class Program
         var eventHubName = configuration["EventHub:EventHubName"] 
             ?? Environment.GetEnvironmentVariable("EVENTHUB_NAME");
 
-        // ================================================================================
-        // STEP 2: Validate Configuration
-        // ================================================================================
+        // Check if we have connection info
         if (string.IsNullOrEmpty(connectionString) || string.IsNullOrEmpty(eventHubName))
         {
             Console.WriteLine("ERROR: Missing Event Hub configuration");
@@ -68,21 +52,13 @@ class Program
             return;
         }
 
-        // ================================================================================
-        // STEP 3: Create Event Hub Producer Client
-        // ================================================================================
-        // The EventHubProducerClient is the Azure SDK component that sends messages
+        // Connect to Event Hubs
         await using var producerClient = new EventHubProducerClient(connectionString, eventHubName);
 
         Console.WriteLine("Connected to Event Hub: {0}", eventHubName);
         Console.WriteLine();
 
-        // ================================================================================
-        // STEP 4: Parse Command Line Arguments
-        // ================================================================================
-        // Two modes available:
-        // 1. Interactive mode (default): Menu-driven, manual message sending
-        // 2. Batch mode (--count N):     Automatically send N messages and exit
+        // Check command line args
         
         int messageCount = 10;
         bool interactiveMode = true;
@@ -96,9 +72,7 @@ class Program
             }
         }
 
-        // ================================================================================
-        // STEP 5: Run in Selected Mode
-        // ================================================================================
+        // Run the producer
         if (interactiveMode)
         {
             await RunInteractiveMode(producerClient);
@@ -112,9 +86,7 @@ class Program
         Console.WriteLine("Producer completed successfully");
     }
 
-    // ====================================================================================
-    // INTERACTIVE MODE - Menu-Driven Message Sending
-    // ====================================================================================
+    // Interactive mode - show menu
     static async Task RunInteractiveMode(EventHubProducerClient producerClient)
     {
         Console.WriteLine("========================================");

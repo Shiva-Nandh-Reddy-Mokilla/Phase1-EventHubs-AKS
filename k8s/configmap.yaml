@@ -1,8 +1,4 @@
-# ====================================================================================
-# CONFIGMAP - Non-sensitive Configuration
-# ====================================================================================
-# Stores configuration that can be used by the consumer pod.
-# ====================================================================================
+# ConfigMap for Event Hub name
 
 apiVersion: v1
 kind: ConfigMap
@@ -11,4 +7,4 @@ metadata:
   namespace: default
 data:
   # Event Hub name (replace with your actual Event Hub name)
-  EVENTHUB_NAME: "your-eventhub-name"
+  EVENTHUB_NAME: "my-event-hub"

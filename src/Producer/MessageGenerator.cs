@@ -1,9 +1,4 @@
-// ====================================================================================
-// MESSAGE GENERATOR - Creates Random Test Messages
-// ====================================================================================
-// This utility class generates random messages for testing Event Hubs.
-// It creates realistic sample data that you might see in a real application.
-// ====================================================================================
+// Helper class to generate random test messages
 
 namespace EventHubProducer;
 
