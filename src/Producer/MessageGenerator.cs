@@ -1,9 +1,11 @@
 namespace EventHubProducer;
 
+// Generates random test messages for Event Hubs
 public static class MessageGenerator
 {
     private static readonly Random _random = new Random();
     
+    // Sample event data
     private static readonly string[] _sampleData = new[]
     {
         "Temperature reading from sensor A",
@@ -18,6 +20,7 @@ public static class MessageGenerator
         "Database backup initiated"
     };
 
+    // Creates a message with random data
     public static Message GenerateMessage()
     {
         var messageId = _random.Next(1, 1000);

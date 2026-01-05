@@ -1,3 +1,6 @@
+# GitHub Actions workflow - builds Docker image and pushes to ACR
+# Runs on push to main or manually via workflow_dispatch
+
 name: Build and Push to ACR
 
 on:
@@ -37,4 +40,3 @@ jobs:
       
       - name: Build summary
         run: echo "Build complete"
-

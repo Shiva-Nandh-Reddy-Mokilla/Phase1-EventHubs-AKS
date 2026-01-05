@@ -1,3 +1,4 @@
+# ConfigMap - stores non-sensitive configuration
 apiVersion: v1
 kind: ConfigMap
 metadata:

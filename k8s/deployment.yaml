@@ -1,3 +1,4 @@
+# Deployment - defines how the consumer app runs in Kubernetes
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -6,7 +7,7 @@ metadata:
   labels:
     app: eventhub-consumer
 spec:
-  replicas: 1
+  replicas: 1  # Number of pods to run
   selector:
     matchLabels:
       app: eventhub-consumer
@@ -19,6 +20,8 @@ spec:
       - name: consumer
         image: shivaacr123.azurecr.io/eventhub-consumer:v1
         imagePullPolicy: Always
+        
+        # Environment variables injected from ConfigMap and Secret
         env:
         - name: EVENTHUB_NAME
           valueFrom:
@@ -31,6 +34,8 @@ spec:
             secretKeyRef:
               name: azure-secrets
               key: eventhub-connection
+        
+        # Resource limits for the container
         resources:
           requests:
             cpu: 100m
