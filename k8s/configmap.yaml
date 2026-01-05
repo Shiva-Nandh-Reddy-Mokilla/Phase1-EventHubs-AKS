@@ -1,10 +1,7 @@
-# ConfigMap for Event Hub name
-
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: consumer-config
   namespace: default
 data:
-  # Event Hub name (replace with your actual Event Hub name)
   EVENTHUB_NAME: "my-event-hub"

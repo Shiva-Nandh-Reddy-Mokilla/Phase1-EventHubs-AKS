@@ -1,5 +1,3 @@
-# Deployment for Consumer app
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -19,12 +17,8 @@ spec:
     spec:
       containers:
       - name: consumer
-        # Replace <YOUR_ACR> with your Azure Container Registry name
-        # Example: myregistry.azurecr.io/eventhub-consumer:v1
         image: shivaacr123.azurecr.io/eventhub-consumer:v1
         imagePullPolicy: Always
-        
-        # Environment variables from ConfigMap and Secret
         env:
         - name: EVENTHUB_NAME
           valueFrom:
@@ -37,8 +31,6 @@ spec:
             secretKeyRef:
               name: azure-secrets
               key: eventhub-connection
-        
-        # Resource limits
         resources:
           requests:
             cpu: 100m
